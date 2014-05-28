@@ -1,0 +1,66 @@
+CC = @CXX@
+C = @CC@
+CXXFLAGS = @CXXFLAGS@
+LDFLAGS = @LDFLAGS@
+MKDIR = @MKDIR@
+CP = @CP@
+STRIP = @STRIP@
+INSTALL = @INSTALL@
+
+HAVE_PCAP = @HAVE_PCAP@
+HAVE_PCAP_H = @HAVE_PCAP_H@
+
+SRCS_CPP = src/p0f.cpp
+SRCS_P0F = \
+	p0f/src/crc32.c \
+	p0f/src/p0f-query.c \
+	p0f/src/p0f.c
+
+OBJS = ${SRCS_CPP:.cpp=.o}
+P0F_OBJS = ${SRCS_P0F:.c=.o}
+
+PREFIX = @prefix@
+BINDIR = ${PREFIX}@bindir@
+LIBDIR = ${PREFIX}@libdir@
+MANDIR = ${PREFIX}@mandir@
+DATAROOTDIR = ${PREFIX}@datarootdir@
+DATADIR = ${PREFIX}@sysconfdir@
+
+ifeq "${HAVE_PCAP} ${HAVE_PCAP_H}" "yes yes"
+.cpp.o:
+	${CC} -I. -I../../../include -Wextra -Wall -pedantic -ansi -export-dynamic -fPIC -shared ${CXXFLAGS} -c $< -o $@
+
+.c.o:
+	${C} ${CXXFLAGS} -fomit-frame-pointer -funroll-loops -Ip0f/include -c $< -o $@
+
+p0f.so: ${OBJS} ${P0F_OBJS}
+	${CC} -export-dynamic -fPIC -shared ${CXXFLAGS} ${OBJS} ${LDFLAGS} -lpcap -o p0f.so
+	${CC} ${CXXFLAGS} ${P0F_OBJS} -lpcap -o p0f/p0f
+	${STRIP} p0f/p0f 2>/dev/null || true
+
+all: p0f.so
+
+install: all
+	${MKDIR} -p ${LIBDIR}/logging
+	${CP} p0f.so ${LIBDIR}/logging
+	${INSTALL} p0f/p0f ${BINDIR}
+	${MKDIR} -p ${MANDIR}/man1
+	${CP} p0f/doc/p0f.1 ${MANDIR}/man1/
+	${CP} p0f/fp/* ${DATADIR}
+
+clean:
+	${RM} -f p0f.so p0f/p0f ${OBJS} ${P0F_OBJS}
+
+distclean: clean
+	${RM} -f Makefile
+else
+all:
+	@echo "pcap.h or pcap development libraries were not found - not building p0f"
+
+install:
+
+clean:
+
+distclean:
+endif
+

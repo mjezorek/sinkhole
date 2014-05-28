@@ -1,0 +1,61 @@
+CC = @CXX@
+CXXFLAGS = @CXXFLAGS@
+LDFLAGS = @LDFLAGS@
+MKDIR = @MKDIR@
+CP = @CP@
+
+PREFIX = @prefix@
+LIBDIR = ${PREFIX}@libdir@
+
+SRCS_CPP = \
+	src/channel.cpp \
+	src/command.cpp \
+	src/io.cpp \
+	src/irc.cpp \
+	src/listener.cpp \
+	src/mode.cpp \
+	src/user.cpp
+
+CMDS_CPP = \
+	commands/cmd_join.cpp \
+	commands/cmd_kick.cpp \
+	commands/cmd_lusers.cpp \
+	commands/cmd_mode.cpp \
+	commands/cmd_motd.cpp \
+	commands/cmd_names.cpp \
+	commands/cmd_nick.cpp \
+	commands/cmd_part.cpp \
+	commands/cmd_pass.cpp \
+	commands/cmd_pingpong.cpp \
+	commands/cmd_privmsg.cpp \
+	commands/cmd_quit.cpp \
+	commands/cmd_topic.cpp \
+	commands/cmd_user.cpp \
+	commands/cmd_who.cpp \
+	commands/cmd_whois.cpp
+
+INCLUDES = include/channel.hpp include/command.hpp include/io.hpp include/irc.hpp include/listener.hpp \
+		include/mode.hpp include/user.hpp
+
+OBJS = ${SRCS_CPP:.cpp=.o} ${CMDS_CPP:.cpp=.o}
+
+.cpp.o:
+	${CC} -I. -I../../../include -Wextra -Wall -pedantic -ansi -export-dynamic -fPIC -shared ${CXXFLAGS} -c $< -o $@
+
+irc.so: ${OBJS}
+	${CC} -export-dynamic -fPIC -shared ${CXXFLAGS} ${OBJS} ${LDFLAGS} -o irc.so
+
+${OBJS}: ${INCLUDES}
+
+all: irc.so
+
+install: all
+	${MKDIR} -p ${LIBDIR}/protocol
+	${CP} irc.so ${LIBDIR}/protocol
+
+clean:
+	${RM} -f irc.so ${OBJS}
+
+distclean: clean
+	${RM} -f Makefile
+

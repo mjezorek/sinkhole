@@ -1,0 +1,70 @@
+CC = @CXX@
+CXXFLAGS = @CXXFLAGS@
+LDFLAGS = @LDFLAGS@
+MKDIR = @MKDIR@
+CP = @CP@
+
+PREFIX = @prefix@
+LIBDIR = ${PREFIX}@libdir@
+
+SRCS_CPP = \
+	src/access.cpp \
+	src/aio.cpp \
+	src/class.cpp \
+	src/client.cpp \
+	src/command.cpp \
+	src/connection.cpp \
+	src/datasocket.cpp \
+	src/directory.cpp \
+	src/ftp.cpp \
+	src/listener.cpp \
+	src/server.cpp 
+
+CMDS_CPP = \
+	commands/cmd_acct.cpp \
+	commands/cmd_appe.cpp \
+	commands/cmd_cdup.cpp \
+	commands/cmd_cwd.cpp \
+	commands/cmd_dele.cpp \
+	commands/cmd_list.cpp \
+	commands/cmd_mkd.cpp \
+	commands/cmd_nlst.cpp \
+	commands/cmd_noop.cpp \
+	commands/cmd_pass.cpp \
+	commands/cmd_pasv.cpp \
+	commands/cmd_port.cpp \
+	commands/cmd_pwd.cpp \
+	commands/cmd_quit.cpp \
+	commands/cmd_retr.cpp \
+	commands/cmd_rn.cpp \
+	commands/cmd_size.cpp \
+	commands/cmd_syst.cpp \
+	commands/cmd_type.cpp \
+	commands/cmd_user.cpp
+
+OBJS = ${SRCS_CPP:.cpp=.o} ${CMDS_CPP:.cpp=.o}
+
+INCLUDES = include/access.hpp include/aio.hpp include/class.hpp include/client.hpp include/command.hpp include/connection.hpp \
+		include/datasocket.hpp include/directory.hpp include/ftp.hpp include/listener.hpp include/server.hpp \
+		include/user.hpp
+
+.cpp.o:
+	${CC} -I. -I../../../include -Wextra -Wall -pedantic -ansi -export-dynamic -fPIC -shared ${CXXFLAGS} -c $< -o $@
+
+ftp.so: ${OBJS}
+	${CC} -export-dynamic -fPIC -shared ${CXXFLAGS} ${OBJS} ${LDFLAGS} -lrt -o ftp.so
+
+${OBJS}: ${INCLUDES}
+
+all: ftp.so
+
+install: all
+	${MKDIR} -p ${LIBDIR}/protocol
+	${CP} ftp.so ${LIBDIR}/protocol
+
+clean:
+	${RM} -f ftp.so ${OBJS}
+
+distclean: clean
+	${RM} -f Makefile
+

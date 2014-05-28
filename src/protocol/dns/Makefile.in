@@ -1,0 +1,44 @@
+CC = @CXX@
+CXXFLAGS = @CXXFLAGS@
+LDFLAGS = @LDFLAGS@
+MKDIR = @MKDIR@
+CP = @CP@
+
+PREFIX = @prefix@
+LIBDIR = ${PREFIX}@libdir@
+
+SRCS_CPP = \
+	src/class.cpp \
+	src/dns.cpp \
+	src/datasocket.cpp \
+	src/query.cpp \
+	src/record.cpp \
+	src/request.cpp \
+	src/server.cpp \
+	src/zone.cpp
+
+OBJS = ${SRCS_CPP:.cpp=.o}
+
+INCLUDES = include/class.hpp include/datasocket.hpp include/dns.hpp include/query.hpp \
+		include/record.hpp include/request.hpp include/zone.hpp
+
+.cpp.o:
+	${CC} -I. -I../../../include -Wextra -Wall -pedantic -ansi -export-dynamic -fPIC -shared ${CXXFLAGS} -c $< -o $@
+
+dns.so: ${OBJS}
+	${CC} -export-dynamic -fPIC -shared ${CXXFLAGS} ${OBJS} ${LDFLAGS} -o dns.so
+
+${OBJS}: ${INCLUDES}
+
+all: dns.so
+
+install: all
+	${MKDIR} -p ${LIBDIR}/protocol
+	${CP} dns.so ${LIBDIR}/protocol
+
+clean:
+	${RM} -f dns.so ${OBJS}
+
+distclean: clean
+	${RM} -f Makefile
+

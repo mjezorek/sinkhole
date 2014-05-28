@@ -1,0 +1,51 @@
+CC = @CXX@
+CXXFLAGS = @CXXFLAGS@
+LDFLAGS = @LDFLAGS@
+MKDIR = @MKDIR@
+CP = @CP@
+
+HAVE_RT = @HAVE_MYSQLCLIENT@
+HAVE_AIO_H = @HAVE_MYSQL_H@
+
+PREFIX = @prefix@
+LIBDIR = ${PREFIX}@libdir@
+
+SRC_CPP = \
+	src/configuration.cpp \
+	src/mqueue.cpp
+
+OBJS = ${SRC_CPP:.cpp=.o}
+
+INCLUDES = include/mqueue.hpp
+
+ifeq "${HAVE_RT}" "yes"
+.cpp.o:
+	${CC} -I. -I../../../include -Wextra -Wall -ansi -export-dynamic -fPIC -shared ${CXXFLAGS} -c $< -o $@
+
+mqueue.so: ${OBJS}
+	${CC} -export-dynamic -fPIC -shared ${CXXFLAGS} ${OBJS} ${LDFLAGS} -lrt -o mqueue.so
+
+${OBJS}: ${INCLUDES}
+
+all: mqueue.so
+
+install: all
+	${MKDIR} -p ${LIBDIR}/logging
+	${CP} mqueue.so ${LIBDIR}/logging
+
+clean:
+	${RM} -f mqueue.so ${OBJS}
+
+distclean: clean
+	${RM} -f Makefile
+else
+all:
+	@echo "aio.h or lib realtime development libraries were not found - not building mqueue"
+
+install:
+
+clean:
+
+distclean:
+endif
+

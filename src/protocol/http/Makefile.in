@@ -1,0 +1,44 @@
+CC = @CXX@
+CXXFLAGS = @CXXFLAGS@
+LDFLAGS = @LDFLAGS@
+MKDIR = @MKDIR@
+CP = @CP@
+
+PREFIX = @prefix@
+LIBDIR = ${PREFIX}@libdir@
+
+SRCS_CPP = \
+	src/aio.cpp \
+	src/class.cpp \
+	src/header.cpp \
+	src/http.cpp \
+	src/io.cpp \
+	src/listener.cpp \
+	src/request.cpp \
+	src/server.cpp
+
+OBJS = ${SRCS_CPP:.cpp=.o}
+
+INCLUDES = include/action.hpp include/aio.hpp include/class.hpp include/header.hpp include/http.hpp \
+		include/io.hpp include/listener.hpp include/request.hpp include/server.hpp include/vhost.hpp
+
+.cpp.o:
+	${CC} -I. -I../../../include -Wextra -Wall -pedantic -ansi -export-dynamic -fPIC -shared ${CXXFLAGS} -c $< -o $@
+
+http.so: ${OBJS}
+	${CC} -export-dynamic -fPIC -shared ${CXXFLAGS} ${OBJS} ${LDFLAGS} -lrt -o http.so
+
+${OBJS}: ${INCLUDES}
+
+all: http.so
+
+install: all
+	${MKDIR} -p ${LIBDIR}/protocol
+	${CP} http.so ${LIBDIR}/protocol
+
+clean:
+	${RM} -f http.so ${OBJS}
+
+distclean: clean
+	${RM} -f Makefile
+

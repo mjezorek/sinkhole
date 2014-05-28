@@ -1,0 +1,64 @@
+CC = @CXX@
+INSTALL = @INSTALL@
+CXXFLAGS = @CXXFLAGS@
+LIBS = @LIBS@
+
+PREFIX = @prefix@
+BINDIR = ${PREFIX}@bindir@
+
+SRCS_CPP = \
+	conf.cpp \
+	io.cpp \
+	io_@IO_ENGINE@.cpp \
+	listener.cpp \
+	logger.cpp \
+	main.cpp \
+	module.cpp \
+	module_dlfcn.cpp \
+	network.cpp \
+	pipe.cpp \
+	sinkhole.cpp \
+	string.cpp \
+	threads.cpp \
+	timers.cpp
+
+SRC_DIRS = logging protocol
+
+INCLUDES = ../include/conf.hpp ../include/config.h ../include/io.hpp ../include/logger.hpp ../include/module.hpp \
+		../include/network.hpp ../include/pipe.hpp ../include/sinkhole.hpp ../include/string.hpp \
+		../include/threads.hpp ../include/timers.hpp
+
+SRCS = ${SRCS_CPP} ${MODULE_SRC}
+OBJS = ${SRCS:.cpp=.o}
+
+all: sinkhole
+	@for i in ${SRC_DIRS}; do \
+		cd $$i && ${MAKE} || exit; cd ..; \
+	done
+
+sinkhole: ${OBJS}
+	${CC} -Wextra -Wall -pedantic -ansi -export-dynamic ${CXXFLAGS} ${OBJS} ${LIBS} -o $@
+
+.cpp.o:
+	${CC} -I../include -Wextra -Wall -pedantic -ansi ${CXXFLAGS} -c $<
+
+${OBJS}: ${INCLUDES}
+
+install: all
+	${INSTALL} sinkhole ${BINDIR}
+	@for i in ${SRC_DIRS}; do \
+		cd $$i && ${MAKE} install || exit; cd ..; \
+	done
+
+clean:
+	${RM} -f *.o sinkhole
+	@for i in ${SRC_DIRS}; do \
+		cd $$i && ${MAKE} clean || exit; cd ..; \
+	done
+
+distclean:
+	${RM} -f *.o sinkhole Makefile
+	@for i in ${SRC_DIRS}; do \
+		cd $$i && ${MAKE} distclean || exit; cd ..; \
+	done
+

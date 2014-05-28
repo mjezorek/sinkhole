@@ -1,0 +1,52 @@
+CC = @CXX@
+CXXFLAGS = @CXXFLAGS@
+LDFLAGS = @LDFLAGS@
+MKDIR = @MKDIR@
+CP = @CP@
+
+HAVE_RT = @HAVE_MYSQLCLIENT@
+HAVE_AIO_H = @HAVE_MYSQL_H@
+
+PREFIX = @prefix@
+LIBDIR = ${PREFIX}@libdir@
+
+SRC_CPP = \
+	src/configuration.cpp \
+	src/flatfile.cpp \
+	src/writerequest.cpp
+
+OBJS = ${SRC_CPP:.cpp=.o}
+
+INCLUDES = include/flatfile.hpp
+
+ifeq "${HAVE_AIO_H} ${HAVE_RT}" "yes yes"
+.cpp.o:
+	${CC} -I. -I../../../include -Wextra -Wall -pedantic -ansi -export-dynamic -fPIC -shared ${CXXFLAGS} -c $< -o $@
+
+flatfile.so: ${OBJS}
+	${CC} -export-dynamic -fPIC -shared ${CXXFLAGS} ${OBJS} ${LDFLAGS} -lrt -o flatfile.so
+
+${OBJS}: ${INCLUDES}
+
+all: flatfile.so
+
+install: all
+	${MKDIR} -p ${LIBDIR}/logging
+	${CP} flatfile.so ${LIBDIR}/logging
+
+clean:
+	${RM} -f flatfile.so ${OBJS}
+
+distclean: clean
+	${RM} -f Makefile
+else
+all:
+	@echo "aio.h or lib realtime development libraries were not found - not building flatfile"
+
+install:
+
+clean:
+
+distclean:
+endif
+

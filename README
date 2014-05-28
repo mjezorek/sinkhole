@@ -1,0 +1,56 @@
+Honeynet Sinkhole
+-----------------
+
+Sinkhole is (C) 2011 The Honeynet Project
+
+1) Introduction
+
+Sinkhole is a program designed to emulate existing services such
+as dns, ftp, http, and irc. Its purpose is only to log relevant parts
+of these protocols to aid administrators in analyzing network based
+attacks. This sinkhole is capable of supporting multiple different
+protocols at once, and allows virtual servers by grouping clients in
+to classes based on IP.
+
+2) Installation
+
+Installing Sinkhole requires autoconf and can easily be done by
+the standard:
+
+ $ ./configure
+ $ make
+ # make install
+
+Optionally you may use the configure options --prefix to choose the
+install path, and --enable-debug to compile with debugging symbols.
+Other command line options can be seen with ./configure --help.
+
+3) Configuration
+
+The default configuration file is installed in /etc from the base
+dir given by --prefix, and is named sinkhole.conf.example. It should
+be copied to sinkhole.conf and then edited to configure the sinkhole.
+
+The configuration is structured in blocks, with blocks containing items
+with values associated with them, or more blocks.
+
+Each supported protocol and logging system is in the form of a module,
+so they can be enabled and disabled at will.
+
+See the example configuration for detailed examples of how this works.
+
+4) P0f
+
+This sinkhole also supports P0f, which is a passive OS fingerprinting tool
+that is (C) 2000-2006 Michal Zalewski (lcamtuf@coredump.cx). Its webpage
+is available at http://lcamtuf.coredump.cx/p0f.shtml.
+
+P0f allows the sinkhole to get the operating system of connecting clients.
+To enable P0f, load the p0f.so module in the config and then start the P0f
+binary by issuing:
+
+ $ sudo ./p0f -Q /var/run/p0f.sock -u `whoami`
+
+This will start P0f listening on /var/run/p0f.sock (you may replace this with
+whatever you wish). Next, add the path to the socket P0f is listening on to
+the configuration file.

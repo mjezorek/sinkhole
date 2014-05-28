@@ -1,0 +1,21 @@
+#!/bin/sh
+
+. ./version.sh
+
+if [ ! -f .configure ] ; then
+	CONFIGFILES=`find ./ -name Makefile.in -exec echo -n {} " " \; | sed -e 's/\.\///g' | sed -e 's/\.in//g' | sed -e 's/\\//\\\\\//g'`
+
+	autoconf --output=.configure
+	sed "s/@CONFIGFILES@/${CONFIGFILES}/g" .configure > .configure.tmp
+	mv .configure.tmp .configure
+
+	if [ -d .git ] ; then
+		VERSION="${VERSION}-`git rev-list HEAD | wc -l | sed -e 's/ //g'`-`git log HEAD -n1 --format=\"%h\"`"
+	fi
+	sed "s/@VERSION@/${VERSION}/g" .configure > .configure.tmp
+	mv .configure.tmp .configure
+fi
+
+chmod +x .configure
+./.configure $@ | sed -e 's/\.configure/configure/g'
+

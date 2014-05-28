@@ -1,0 +1,51 @@
+CC = @CXX@
+CXXFLAGS = @CXXFLAGS@
+LDFLAGS = @LDFLAGS@
+MKDIR = @MKDIR@
+CP = @CP@
+
+HAVE_MYSQLCLIENT = @HAVE_MYSQLCLIENT@
+HAVE_MYSQL_H = @HAVE_MYSQL_H@
+
+PREFIX = @prefix@
+LIBDIR = ${PREFIX}@libdir@
+
+SRCS_CPP = \
+	src/mysql.cpp \
+	src/query.cpp
+
+OBJS = ${SRCS_CPP:.cpp=.o}
+
+INCLUDES = include/mysql.hpp include/query.hpp
+
+ifeq "${HAVE_MYSQL_H} ${HAVE_MYSQLCLIENT}" "yes yes"
+.cpp.o:
+	${CC} -I. -I../../../include -Wextra -Wall -pedantic -ansi -export-dynamic -fPIC -shared ${CXXFLAGS} -c $< -o $@
+
+mysql.so: ${OBJS}
+	${CC} -export-dynamic -fPIC -shared ${CXXFLAGS} ${OBJS_CPP} ${LDFLAGS} -lmysqlclient -o mysql.so
+
+${OBJS}: ${INCLUDES}
+
+all: mysql.so
+
+install: all
+	${MKDIR} -p ${LIBDIR}/logging
+	${CP} mysql.so ${LIBDIR}/logging
+
+clean:
+	${RM} -f mysql.so ${OBJS}
+
+distclean: clean
+	${RM} -f Makefile
+else
+all:
+	@echo "mysql.h or mysql development libraries were not found - not building mysql"
+
+install:
+
+clean:
+
+distclean:
+endif
+

@@ -1,0 +1,8 @@
+Makefile
+autom4te*
+config.*
+*.o
+*.so
+.configure
+include/config.h
+src/sinkhole

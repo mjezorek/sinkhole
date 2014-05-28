@@ -1,0 +1,36 @@
+CP = @CP@
+MKDIR = @MKDIR@
+
+PREFIX = @prefix@
+BINDIR = ${PREFIX}@bindir@
+DATADIR = ${PREFIX}@sysconfdir@
+LIBDIR = ${PREFIX}@libdir@
+DATAROOTDIR = ${PREFIX}@datarootdir@
+MANDIR = ${PREFIX}@mandir@
+
+SRC_DIRS = src
+
+all:
+	@for i in ${SRC_DIRS}; do \
+		cd $$i && ${MAKE} || exit; cd ..; \
+	done
+
+install: all
+	${MKDIR} -p ${PREFIX} ${BINDIR} ${DATADIR} ${LIBDIR} ${MANDIR}
+	${CP} sinkhole.conf.example ${DATADIR}
+	@for i in ${SRC_DIRS}; do \
+		cd $$i && ${MAKE} install || exit; cd ..; \
+	done
+
+clean:
+	@for i in ${SRC_DIRS}; do \
+		cd $$i && ${MAKE} clean || exit; cd ..; \
+	done
+
+distclean: clean
+	${RM} -f .configure Makefile include/config.h
+	@for i in ${SRC_DIRS}; do \
+		cd $$i && ${MAKE} distclean || exit; cd ..; \
+	done
+	rm -rf autom4te.cache config.log config.status
+

@@ -1,0 +1,24 @@
+
+SRC_DIRS = flatfile mqueue mysql p0f
+
+all:
+	@for i in ${SRC_DIRS}; do \
+		cd $$i && ${MAKE} || exit; cd ..; \
+	done
+
+install: all
+	@for i in ${SRC_DIRS}; do \
+		cd $$i && ${MAKE} install || exit; cd ..; \
+	done
+
+clean:
+	@for i in ${SRC_DIRS}; do \
+		cd $$i && ${MAKE} clean || exit; cd ..; \
+	done
+
+distclean: clean
+	${RM} -f Makefile
+	@for i in ${SRC_DIRS}; do \
+		cd $$i && ${MAKE} distclean || exit; cd ..; \
+	done
+
