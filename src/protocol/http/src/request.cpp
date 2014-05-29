@@ -125,6 +125,7 @@ void HTTPRequest::Process()
 		else
 		{
 			reply.SetCode(HTTP_CODE_OK);
+			reply.SetAttribute("X-Malware-Sinkhole","malware sinkhole");
 			reply.SetAttribute("Content-Length", stringify(s.st_size));
 			this->aio = new AIO(this->con, file);
 		}
